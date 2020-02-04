@@ -115,6 +115,7 @@ module riscv_core
   input  logic        irq_external_i, 
   input  logic [14:0] irq_fast_i,
   input  logic        irq_nmi_i,
+  input  logic [31:0] irq_fastx_i,
 
   output logic        sec_lvl_o,
 
@@ -149,7 +150,7 @@ module riscv_core
   logic [2:0]        pc_mux_id;     // Mux selector for next PC
   logic [2:0]        exc_pc_mux_id; // Mux selector for exception PC
   logic [5:0]        exc_cause;
-  logic              trap_addr_mux;
+  logic [2:0]        trap_addr_mux;
   logic              lsu_load_err;
   logic              lsu_store_err;
 
@@ -248,8 +249,8 @@ module riscv_core
 
   // CSR control
   logic        csr_access_ex;
-  logic  [1:0] csr_op_ex;
-  logic [23:0] mtvec, utvec;
+  logic [1:0]  csr_op_ex;
+  logic [23:0] mtvec, mtvecx, utvec;
 
   logic        csr_access;
   logic [1:0]  csr_op;
@@ -484,6 +485,7 @@ module riscv_core
 
     // trap vector location
     .m_trap_base_addr_i  ( mtvec             ),
+    .m_trap_base_addrx_i ( mtvecx            ),
     .u_trap_base_addr_i  ( utvec             ),
     .trap_addr_mux_i     ( trap_addr_mux     ),
 
@@ -724,7 +726,6 @@ module riscv_core
     .irq_pending_i                ( irq_pending          ), // incoming interrupts
     .irq_id_i                     ( irq_id               ),
     .irq_sec_i                    ( (PULP_SECURE) ? irq_sec_i : 1'b0 ),
-    .irq_id_i                     ( irq_id_i             ),
     .m_irq_enable_i               ( m_irq_enable         ),
     .u_irq_enable_i               ( u_irq_enable         ),
     .irq_ack_o                    ( irq_ack_o            ),
@@ -976,6 +977,7 @@ module riscv_core
     .core_id_i               ( core_id_i          ),
     .cluster_id_i            ( cluster_id_i       ),
     .mtvec_o                 ( mtvec              ),
+    .mtvecx_o                ( mtvecx             ),
     .utvec_o                 ( utvec              ),
     // boot address
     .boot_addr_i             ( boot_addr_i[31:1]  ),
@@ -1003,6 +1005,7 @@ module riscv_core
     .irq_external_i          ( irq_external_i     ),
     .irq_fast_i              ( irq_fast_i         ),
     .irq_nmi_i               ( irq_nmi_i          ),
+    .irq_fastx_i             ( irq_fastx_i        ),
     .irq_pending_o           ( irq_pending        ), // IRQ to ID/Controller
     .irq_id_o                ( irq_id             ),
     // debug

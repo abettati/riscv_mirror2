@@ -54,6 +54,7 @@ module riscv_cs_registers
   input  logic  [3:0]     core_id_i,
   input  logic  [5:0]     cluster_id_i,
   output logic [23:0]     mtvec_o,
+  output logic [23:0]     mtvecx_o,
   output logic [23:0]     utvec_o,
 
   // Used for boot address
@@ -163,6 +164,8 @@ module riscv_cs_registers
   localparam PERF_EXT_ID     = 12;
   localparam PERF_APU_ID     = PERF_EXT_ID + N_EXT_CNT;
   localparam MTVEC_MODE      = 2'b01;
+  localparam MTVECX_MODE     = 2'b01;
+  localparam MTVECX_BASE     = 24'h1; // no need to be 4-byte alligned, not risc-v compliant
 
   localparam MAX_N_PMP_ENTRIES = 16;
   localparam MAX_N_PMP_CFG     =  4;
@@ -272,10 +275,14 @@ module riscv_cs_registers
   logic [ 5:0] ucause_q, ucause_n;
   //not implemented yet
   logic [23:0] mtvec_n, mtvec_q;
+  logic [23:0] mtvecx_n, mtvecx_q;
   logic [23:0] utvec_n, utvec_q;
 
   Interrupts_t mip;
+  logic [31:0] mipx;
   Masked_Interrupts_t mie_q, mie_n;
+  logic [31:0] miex_q, miex_n;
+
   logic is_irq;
   PrivLvl_t priv_lvl_n, priv_lvl_q, priv_lvl_reg_q;
   Pmp_t pmp_reg_q, pmp_reg_n;
@@ -299,6 +306,7 @@ module riscv_cs_registers
   logic                          is_pcer;
   logic                          is_pcmr;
   Interrupts_t                   irq_req_n, irq_req_q;
+  logic [31:0]                   irq_reqx_n, irq_reqx_q;
 
   assign is_irq = csr_cause_i[5];
 
@@ -307,6 +315,7 @@ module riscv_cs_registers
   assign irq_req_n.irq_external = irq_external_i;
   assign irq_req_n.irq_fast     = irq_fast_i;
   assign irq_req_n.irq_nmi      = irq_nmi_i;
+  assign irq_reqx_n             = irq_fastx_i;
 
   // mip CSR is purely combintational
   // must be able to re-enable the clock upon WFI
@@ -315,6 +324,7 @@ module riscv_cs_registers
   assign mip.irq_external = irq_req_q.irq_external & mie_q.irq_external;
   assign mip.irq_fast     = irq_req_q.irq_fast     & mie_q.irq_fast;
   assign mip.irq_nmi      = irq_req_q.irq_nmi;
+  assign mipx             = irq_reqx_q             & miex_q;
 
   ////////////////////////////////////////////
   //   ____ ____  ____    ____              //
@@ -365,9 +375,14 @@ if(PULP_SECURE==1) begin
         csr_rdata_int[CSR_MEIX_BIT]                       = mie_q.irq_external;
         csr_rdata_int[CSR_MFIX_BIT_HIGH:CSR_MFIX_BIT_LOW] = mie_q.irq_fast;
       end
+      
+      // miex: machine interrupt enable for pulp specific fast irqs 
+      CSR_MIEX: csr_rdata_int = miex_q;
 
       // mtvec: machine trap-handler base address
       CSR_MTVEC: csr_rdata_int = {mtvec_q, 6'h0, MTVEC_MODE};
+      // mtvecx: machine trap-handler base address for pulp specific fast irqs
+      CSR_MTVECX: csr_rdata_int = {mtvecx_q, 6'h0, MTVECX_MODE};
       // mscratch: machine scratch
       CSR_MSCRATCH: csr_rdata_int = mscratch_q;
       // mepc: exception program counter
@@ -383,6 +398,9 @@ if(PULP_SECURE==1) begin
         csr_rdata_int[CSR_MFIX_BIT_HIGH:CSR_MFIX_BIT_LOW] = mip.irq_fast;
         csr_rdata_int[CSR_NMIX_BIT]                       = mip.irq_nmi;
       end
+      
+      // mipx: machine interrupt pending for pulp specific fast irqs
+      CSR_MIPX: csr_rdata_int = mipx;
 
       // mhartid: unique hardware thread id
       CSR_MHARTID: csr_rdata_int = {21'b0, cluster_id_i[5:0], 1'b0, core_id_i[3:0]};
@@ -469,8 +487,13 @@ end else begin //PULP_SECURE == 0
         csr_rdata_int[CSR_MEIX_BIT]                       = mie_q.irq_external;
         csr_rdata_int[CSR_MFIX_BIT_HIGH:CSR_MFIX_BIT_LOW] = mie_q.irq_fast;
       end
+
+      // miex: machine interrupt enable for pulp specific fast irqs 
+      CSR_MIEX: csr_rdata_int = miex_q;
       // mtvec: machine trap-handler base address
       CSR_MTVEC: csr_rdata_int = {mtvec_q, 6'h0, MTVEC_MODE};
+      // mtvecx: machine trap-handler base address for pulp specific fast irqs
+      CSR_MTVECX: csr_rdata_int = {mtvecx_q, 6'h0, MTVECX_MODE};
       // mscratch: machine scratch
       CSR_MSCRATCH: csr_rdata_int = mscratch_q;
       // mepc: exception program counter
@@ -486,6 +509,8 @@ end else begin //PULP_SECURE == 0
         csr_rdata_int[CSR_MFIX_BIT_HIGH:CSR_MFIX_BIT_LOW] = mip.irq_fast;
         csr_rdata_int[CSR_NMIX_BIT]                       = mip.irq_nmi;
       end
+      // mipx: machine interrupt pending for pulp specific fast irqs
+      CSR_MIPX: csr_rdata_int = mipx;
       // mhartid: unique hardware thread id
       CSR_MHARTID: csr_rdata_int = {21'b0, cluster_id_i[5:0], 1'b0, core_id_i[3:0]};
 
@@ -546,6 +571,8 @@ if(PULP_SECURE==1) begin
     pmpcfg_we                = '0;
 
     mie_n                    = mie_q;
+    miex_n                   = miex_q;
+    mtvecx_n                 = mtvecx_q;
 
     if (FPU == 1) if (fflags_we_i) fflags_n = fflags_i | fflags_q;
 
@@ -577,9 +604,17 @@ if(PULP_SECURE==1) begin
         mie_n.irq_external = csr_wdata_int[CSR_MEIX_BIT];
         mie_n.irq_fast     = csr_wdata_int[CSR_MFIX_BIT_HIGH:CSR_MFIX_BIT_LOW];
       end
+      // miex: machine interrupt enable for pulp specific fast irqs 
+      CSR_MIEX: if (csr_we_int) begin
+        miex_n = csr_wdata_int;
+      end
       // mtvec: machine trap-handler base address
       CSR_MTVEC: if (csr_we_int) begin
         mtvec_n    = csr_wdata_int[31:8];
+      end
+      // mtvecx: machine trap-handler base address for pulp specific fast irqs
+      CSR_MTVECX: if (csr_we_int) begin
+        mtvecx_n    = csr_wdata_int[31:8];
       end
       // mscratch: machine scratch
       CSR_MSCRATCH: if (csr_we_int) begin
@@ -813,6 +848,8 @@ end else begin //PULP_SECURE == 0
     pmpcfg_we                = '0;
 
     mie_n                    = mie_q;
+    miex_n                   = miex_q;
+    mtvecx_n                 = mtvecx_q;
 
     if (FPU == 1) if (fflags_we_i) fflags_n = fflags_i | fflags_q;
 
@@ -843,6 +880,10 @@ end else begin //PULP_SECURE == 0
         mie_n.irq_timer    = csr_wdata_int[CSR_MTIX_BIT];
         mie_n.irq_external = csr_wdata_int[CSR_MEIX_BIT];
         mie_n.irq_fast     = csr_wdata_int[CSR_MFIX_BIT_HIGH:CSR_MFIX_BIT_LOW];
+      end
+      // miex: machine interrupt enable for pulp specific fast irqs 
+      CSR_MIEX: if (csr_we_int) begin
+        miex_n = csr_wdata_int;
       end
       // mscratch: machine scratch
       CSR_MSCRATCH: if (csr_we_int) begin
@@ -980,7 +1021,45 @@ end //PULP_SECURE
   // - encodes priority order
   always_comb
   begin
-    if(mip.irq_fast != '0)
+    // TODO decide priority @ system level
+    if (mipx != '0) begin
+      if      (mipx[31]) irq_id_o = 6'd63;  
+      else if (mipx[30]) irq_id_o = 6'd62;
+      else if (mipx[29]) irq_id_o = 6'd61;
+      else if (mipx[28]) irq_id_o = 6'd60;
+      else if (mipx[27]) irq_id_o = 6'd59;
+      else if (mipx[26]) irq_id_o = 6'd58;
+      else if (mipx[25]) irq_id_o = 6'd57;
+      else if (mipx[24]) irq_id_o = 6'd56;
+      else if (mipx[23]) irq_id_o = 6'd55;
+      else if (mipx[22]) irq_id_o = 6'd54;
+      else if (mipx[21]) irq_id_o = 6'd53;
+      else if (mipx[20]) irq_id_o = 6'd52;
+      else if (mipx[19]) irq_id_o = 6'd51;
+      else if (mipx[18]) irq_id_o = 6'd50;
+      else if (mipx[17]) irq_id_o = 6'd49;
+      else if (mipx[16]) irq_id_o = 6'd48;
+      else if (mipx[15]) irq_id_o = 6'd47;
+      else if (mipx[14]) irq_id_o = 6'd46;
+      else if (mipx[13]) irq_id_o = 6'd45;
+      else if (mipx[12]) irq_id_o = 6'd44;
+      else if (mipx[11]) irq_id_o = 6'd43;
+      else if (mipx[10]) irq_id_o = 6'd42;
+      else if (mipx[ 9]) irq_id_o = 6'd41;
+      else if (mipx[ 8]) irq_id_o = 6'd40;
+      else if (mipx[ 7]) irq_id_o = 6'd39;
+      else if (mipx[ 6]) irq_id_o = 6'd38;
+      else if (mipx[ 5]) irq_id_o = 6'd37;
+      else if (mipx[ 4]) irq_id_o = 6'd36;
+      else if (mipx[ 3]) irq_id_o = 6'd35;
+      else if (mipx[ 2]) irq_id_o = 6'd34;
+      else if (mipx[ 1]) irq_id_o = 6'd33;
+      else               irq_id_o = 6'd32;
+    end else if (mip.irq_nmi) begin
+      // EXC_CAUSE_IRQ_NM
+      irq_id_o    = {6'd31};
+
+    end else if(mip.irq_fast != '0)
     begin
       if      (mip.irq_fast[14]) irq_id_o = 6'd30;
       else if (mip.irq_fast[13]) irq_id_o = 6'd29;
@@ -1020,6 +1099,7 @@ end //PULP_SECURE
   assign fprec_o         = (FPU == 1) ? fprec_q : '0;
 
   assign mtvec_o         = mtvec_q;
+  assign mtvecx_o        = mtvecx_q;
   assign utvec_o         = utvec_q;
 
   assign mepc_o          = mepc_q;
@@ -1073,19 +1153,22 @@ end //PULP_SECURE
             uepc_q         <= '0;
             ucause_q       <= '0;
             mtvec_q        <= '0;
+            mtvecx_q       <= MTVECX_BASE;
             utvec_q        <= '0;
             priv_lvl_q     <= PRIV_LVL_M;
             irq_req_q      <= '0;
- 
+            irq_reqx_q     <= '0;  
           end
           else
           begin
             uepc_q         <= uepc_n;
             ucause_q       <= ucause_n;
             mtvec_q        <= mtvec_n;
+            mtvecx_q       <= mtvecx_n;
             utvec_q        <= utvec_n;
             priv_lvl_q     <= priv_lvl_n;
             irq_req_q      <= irq_req_n;
+            irq_reqx_q     <= irq_reqx_n;
           end
         end
 
@@ -1095,6 +1178,7 @@ end //PULP_SECURE
         assign uepc_q       = '0;
         assign ucause_q     = '0;
         assign mtvec_q      = boot_addr_i[30:7];
+        assign mtvecx_q     = MTVECX_BASE;
         assign utvec_q      = '0;
         assign priv_lvl_q   = PRIV_LVL_M;
 
@@ -1130,6 +1214,7 @@ end //PULP_SECURE
       dscratch1_q <= '0;
       mscratch_q  <= '0;
       mie_q       <= '0;
+      miex_q      <= '0;
     end
     else
     begin
@@ -1160,6 +1245,7 @@ end //PULP_SECURE
       dscratch1_q<= dscratch1_n;
       mscratch_q <= mscratch_n;
       mie_q      <= mie_n;
+      miex_q     <= miex_n;
     end
   end
 

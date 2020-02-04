@@ -87,7 +87,7 @@ module riscv_id_stage
     output logic        pc_set_o,
     output logic [2:0]  pc_mux_o,
     output logic [2:0]  exc_pc_mux_o,
-    output logic        trap_addr_mux_o,
+    output logic [2:0]  trap_addr_mux_o,
 
     input  logic        illegal_c_insn_i,
     input  logic        is_compressed_i,
