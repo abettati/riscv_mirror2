@@ -239,6 +239,36 @@ custom-veri-run: verilate custom/hello_world.hex
 	./testbench_verilator $(VERI_FLAGS) \
 		"+firmware=custom/hello_world.hex"
 
+# compile and run interrupt_test
+interrupt_test/interrupt_test.elf: interrupt_test/interrupt_test.c
+	$(RISCV_EXE_PREFIX)gcc -march=rv32imc -o $@ -w -Os -g -nostdlib \
+		-T interrupt_test/link.ld  \
+		-static \
+		interrupt_test/crt0.S \
+		$^ interrupt_test/syscalls.c interrupt_test/vectors.S \
+		-I $(RISCV)/riscv32-unknown-elf/include \
+		-L $(RISCV)/riscv32-unknown-elf/lib \
+		-lc -lm -lgcc
+interrupt-clean:
+	rm -rf interrupt_test/interrupt_test.elf interrupt_test/interrupt_test.hex
+
+.PHONY: interrupt-vsim-run
+interrupt-vsim-run: vsim-all interrupt_test/interrupt_test.hex
+interrupt-vsim-run: ALL_VSIM_FLAGS += "+firmware=interrupt_test/interrupt_test.hex"
+interrupt-vsim-run: vsim-run
+
+.PHONY: interrupt-vsim-run-gui
+
+interrupt-vsim-run-gui: vsim-all interrupt_test/interrupt_test.hex
+interrupt-vsim-run-gui: ALL_VSIM_FLAGS += "+firmware=interrupt_test/interrupt_test.hex"
+interrupt-vsim-run-gui: vsim-run-gui
+
+
+.PHONY: interrupt-veri-run
+interrupt-veri-run: verilate interrupt_test/interrupt_test.hex
+	./testbench_verilator $(VERI_FLAGS) \
+		"+firmware=interrupt_test/interrupt_test.hex"
+
 # compile and dump picorv firmware
 firmware/firmware.elf: $(FIRMWARE_OBJS) $(FIRMWARE_TEST_OBJS) $(COMPLIANCE_TEST_OBJS) \
 				firmware/link.ld
@@ -416,7 +446,7 @@ csmith-loop: riscv-fesvr/build.ok riscv-isa-sim/build.ok
 
 # general targets
 .PHONY: clean
-clean: tb-clean verilate-clean vcs-clean firmware-clean csmith-clean custom-clean
+clean: tb-clean verilate-clean vcs-clean firmware-clean csmith-clean custom-clean interrupt-clean
 
 .PHONY: distclean
 distclean: clean
