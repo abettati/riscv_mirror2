@@ -121,7 +121,7 @@ module riscv_cs_registers
 
   input  logic            csr_restore_dret_i,
   //coming from controller
-  input  logic [5:0]      csr_cause_i,
+  input  logic [6:0]      csr_cause_i,
   //coming from controller
   input  logic            csr_save_cause_i,
   // Hardware loops
@@ -271,8 +271,8 @@ module riscv_cs_registers
 
   logic [31:0] exception_pc;
   Status_t mstatus_q, mstatus_n;
-  logic [ 5:0] mcause_q, mcause_n;
-  logic [ 5:0] ucause_q, ucause_n;
+  logic [ 6:0] mcause_q, mcause_n;
+  logic [ 6:0] ucause_q, ucause_n;
   //not implemented yet
   logic [23:0] mtvec_n, mtvec_q;
   logic [23:0] mtvecx_n, mtvecx_q;
@@ -308,7 +308,7 @@ module riscv_cs_registers
   Interrupts_t                   irq_req_n, irq_req_q;
   logic [31:0]                   irq_reqx_n, irq_reqx_q;
 
-  assign is_irq = csr_cause_i[5];
+  assign is_irq = csr_cause_i[6];
 
   assign irq_req_n.irq_software = irq_software_i;
   assign irq_req_n.irq_timer    = irq_timer_i; 

@@ -302,7 +302,7 @@ module riscv_core
   logic        csr_save_if;
   logic        csr_save_id;
   logic        csr_save_ex;
-  logic [5:0]  csr_cause;
+  logic [6:0]  csr_cause;
   logic        csr_restore_mret_id;
   logic        csr_restore_uret_id;
 

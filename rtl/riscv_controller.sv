@@ -129,7 +129,7 @@ module riscv_controller
   output logic        csr_save_if_o,
   output logic        csr_save_id_o,
   output logic        csr_save_ex_o,
-  output logic [5:0]  csr_cause_o,
+  output logic [6:0]  csr_cause_o,
   output logic        csr_irq_sec_o,
   output logic        csr_restore_mret_id_o,
   output logic        csr_restore_uret_id_o,
@@ -719,8 +719,7 @@ module riscv_controller
         end
 
         csr_save_cause_o  = 1'b1;
-        csr_cause_o       = {1'b1,irq_id_ctrl_i};
-
+        csr_cause_o       = {1'b1,irq_id_ctrl_i[5:0]};
         csr_save_id_o     = 1'b1;
         
         exc_ack_o         = 1'b1;
@@ -754,8 +753,7 @@ module riscv_controller
         end
 
         csr_save_cause_o  = 1'b1;
-        csr_cause_o       = {1'b1,irq_id_ctrl_i};
-
+        csr_cause_o       = {1'b1,irq_id_ctrl_i[5:0]};
         csr_save_if_o     = 1'b1;
         exc_ack_o         = 1'b1;
         ctrl_fsm_ns       = DECODE;

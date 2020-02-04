@@ -173,7 +173,7 @@ module riscv_id_stage
     output logic [1:0]  csr_op_ex_o,
     input  PrivLvl_t    current_priv_lvl_i,
     output logic        csr_irq_sec_o,
-    output logic [5:0]  csr_cause_o,
+    output logic [6:0]  csr_cause_o,
     output logic        csr_save_if_o,
     output logic        csr_save_id_o,
     output logic        csr_save_ex_o,
