@@ -29,6 +29,10 @@ _start:
 	la a0, __vector_start
 	csrw mtvec, a0
 
+/* set vector x table address */
+	la a0, __vector_x_start
+	csrw 0x307, a0
+
 /* clear the bss segment */
 	la a0, __bss_start
 	la a2, __bss_end
