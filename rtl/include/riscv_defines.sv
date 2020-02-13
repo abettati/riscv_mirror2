@@ -195,8 +195,7 @@ parameter VEC_MODE8  = 2'b11;
 //                           |___/                     //
 /////////////////////////////////////////////////////////
 
-// abet CSRs mnemonics
-// TODO : imported form IBEX, some regs may be still not implemented
+// CSRs mnemonics enum
 typedef enum logic[11:0] {
   // Machine information
   CSR_MHARTID   = 12'hF14,
@@ -256,13 +255,13 @@ typedef enum logic[11:0] {
 
 } csr_num_e;
 
-// abet CSR operations
+// CSR operations
 parameter CSR_OP_NONE  = 2'b00;
 parameter CSR_OP_WRITE = 2'b01;
 parameter CSR_OP_SET   = 2'b10;
 parameter CSR_OP_CLEAR = 2'b11;
 
-//abet CSR interrupt pending/enable bits
+// CSR interrupt pending/enable bits
 parameter int unsigned CSR_MSIX_BIT      = 3;
 parameter int unsigned CSR_MTIX_BIT      = 7;
 parameter int unsigned CSR_MEIX_BIT      = 11;
@@ -396,7 +395,6 @@ parameter EXC_PC_IRQ       = 3'b001;
 parameter EXC_PC_DBD       = 3'b010;
 
 // Exception Cause
-// TODO abet change this to enum logic [5:0] {...} exc_cause_e;
 parameter EXC_CAUSE_IRQ_SOFTWARE_M     = {1'b1, 5'd03};
 parameter EXC_CAUSE_IRQ_TIMER_M        = {1'b1, 5'd07};
 parameter EXC_CAUSE_IRQ_EXTERNAL_M     = {1'b1, 5'd11};

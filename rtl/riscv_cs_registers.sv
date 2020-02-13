@@ -1153,7 +1153,7 @@ end //PULP_SECURE
             uepc_q         <= '0;
             ucause_q       <= '0;
             mtvec_q        <= '0;
-            mtvecx_q       <= MTVECX_BASE;
+            mtvecx_q       <= '0;
             utvec_q        <= '0;
             priv_lvl_q     <= PRIV_LVL_M;
             irq_req_q      <= '0;
@@ -1178,7 +1178,7 @@ end //PULP_SECURE
         assign uepc_q       = '0;
         assign ucause_q     = '0;
         assign mtvec_q      = boot_addr_i[30:7];
-        assign mtvecx_q     = MTVECX_BASE;
+        assign mtvecx_q     = '0;
         assign utvec_q      = '0;
         assign priv_lvl_q   = PRIV_LVL_M;
 
