@@ -585,11 +585,13 @@ module mm_ram
 // IRQ SIGNALS ROUTING
 
 assign irq_software_o = irq_rnd_lines.irq_software;
-assign irq_timer_o    = irq_rnd_lines.irq_timer | irq_timer_q;
+assign irq_timer_o    = irq_rnd_lines.irq_timer;
 assign irq_external_o = irq_rnd_lines.irq_external;
 assign irq_fast_o     = irq_rnd_lines.irq_fast; 
 assign irq_nmi_o      = irq_rnd_lines.irq_nmi;
-assign irq_fastx_o    = irq_rnd_lines.irq_fastx;
+assign irq_fastx_o[6:0]  = irq_rnd_lines.irq_fastx[6:0];
+assign irq_fastx_o[7]    = irq_rnd_lines.irq_fastx[7] | irq_timer_q;
+assign irq_fastx_o[31:8] = irq_rnd_lines.irq_fastx[31:8];
 
 `ifndef VERILATOR
   riscv_random_stall

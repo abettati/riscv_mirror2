@@ -36,59 +36,7 @@ void stats(void);
 //R/W
 static inline  void writew(uint32_t val, volatile uint32_t *addr);	
 
-void software_irq_handler(void) __attribute__ ((interrupt ("machine")));
-void timer_irq_handler(void)    __attribute__ ((interrupt ("machine")));
-void external_irq_handler(void) __attribute__ ((interrupt ("machine")));
 
-void fast0_irq_handler(void)  __attribute__ ((interrupt ("machine")));
-void fast1_irq_handler(void)  __attribute__ ((interrupt ("machine")));
-void fast2_irq_handler(void)  __attribute__ ((interrupt ("machine")));
-void fast3_irq_handler(void)  __attribute__ ((interrupt ("machine")));
-void fast4_irq_handler(void)  __attribute__ ((interrupt ("machine")));
-void fast5_irq_handler(void)  __attribute__ ((interrupt ("machine")));
-void fast6_irq_handler(void)  __attribute__ ((interrupt ("machine")));
-void fast7_irq_handler(void)  __attribute__ ((interrupt ("machine")));
-void fast8_irq_handler(void)  __attribute__ ((interrupt ("machine")));
-void fast9_irq_handler(void)  __attribute__ ((interrupt ("machine")));
-void fast10_irq_handler(void) __attribute__ ((interrupt ("machine")));
-void fast11_irq_handler(void) __attribute__ ((interrupt ("machine")));
-void fast12_irq_handler(void) __attribute__ ((interrupt ("machine")));
-void fast13_irq_handler(void) __attribute__ ((interrupt ("machine")));
-void fast14_irq_handler(void) __attribute__ ((interrupt ("machine")));
-void fast14_irq_handler(void) __attribute__ ((interrupt ("machine")));
-
-void nmi_irq_handler(void)    __attribute__ ((interrupt ("machine")));
-
-void fastx0_irq_handler(void)  __attribute__ ((interrupt ("machine")));
-void fastx1_irq_handler(void)  __attribute__ ((interrupt ("machine")));
-void fastx2_irq_handler(void)  __attribute__ ((interrupt ("machine")));
-void fastx3_irq_handler(void)  __attribute__ ((interrupt ("machine")));
-void fastx4_irq_handler(void)  __attribute__ ((interrupt ("machine")));
-void fastx5_irq_handler(void)  __attribute__ ((interrupt ("machine")));
-void fastx6_irq_handler(void)  __attribute__ ((interrupt ("machine")));
 void fastx7_irq_handler(void)  __attribute__ ((interrupt ("machine")));
-void fastx8_irq_handler(void)  __attribute__ ((interrupt ("machine")));
-void fastx9_irq_handler(void)  __attribute__ ((interrupt ("machine")));
-void fastx10_irq_handler(void) __attribute__ ((interrupt ("machine")));
-void fastx11_irq_handler(void) __attribute__ ((interrupt ("machine")));
-void fastx12_irq_handler(void) __attribute__ ((interrupt ("machine")));
-void fastx13_irq_handler(void) __attribute__ ((interrupt ("machine")));
-void fastx14_irq_handler(void) __attribute__ ((interrupt ("machine")));
-void fastx15_irq_handler(void) __attribute__ ((interrupt ("machine")));
-void fastx16_irq_handler(void) __attribute__ ((interrupt ("machine")));
-void fastx17_irq_handler(void) __attribute__ ((interrupt ("machine")));
-void fastx18_irq_handler(void) __attribute__ ((interrupt ("machine")));
-void fastx19_irq_handler(void) __attribute__ ((interrupt ("machine")));
-void fastx20_irq_handler(void) __attribute__ ((interrupt ("machine")));
-void fastx21_irq_handler(void) __attribute__ ((interrupt ("machine")));
-void fastx22_irq_handler(void) __attribute__ ((interrupt ("machine")));
-void fastx23_irq_handler(void) __attribute__ ((interrupt ("machine")));
-void fastx24_irq_handler(void) __attribute__ ((interrupt ("machine")));
-void fastx25_irq_handler(void) __attribute__ ((interrupt ("machine")));
-void fastx26_irq_handler(void) __attribute__ ((interrupt ("machine")));
-void fastx27_irq_handler(void) __attribute__ ((interrupt ("machine")));
-void fastx28_irq_handler(void) __attribute__ ((interrupt ("machine")));
-void fastx29_irq_handler(void) __attribute__ ((interrupt ("machine")));
-void fastx30_irq_handler(void) __attribute__ ((interrupt ("machine")));
-void fastx31_irq_handler(void) __attribute__ ((interrupt ("machine")));
+
 #endif
